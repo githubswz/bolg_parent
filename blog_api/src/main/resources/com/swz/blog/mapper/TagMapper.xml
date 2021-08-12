@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.swz.blog.dao.TagDao">
+
+    <select id="selectTagsByArticleId" parameterType="long" resultType="com.swz.blog.pojo.Tag">
+        select id, avatar, tag_name as tagName
+        from ms_tag
+        where id in (select tag_id from ms_article_tag where article_id = #{id})
+    </select>
+
+    <select id="selectHotTags" parameterType="int" resultType="com.swz.blog.pojo.Tag">
+        SELECT tag_name AS tagName, avatar, id
+        FROM ms_tag,
+             (SELECT COUNT(*) AS COUNT, tag_id FROM ms_article_tag GROUP BY tag_id LIMIT 0,#{limit}) as c
+        WHERE ms_tag.id = c.tag_id
+        ORDER BY c.count DESC
+    </select>
+
+
+</mapper>

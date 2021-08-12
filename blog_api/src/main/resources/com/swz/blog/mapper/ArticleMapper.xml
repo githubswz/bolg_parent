@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.swz.blog.dao.ArticleDao">
+
+    <!-- 查询归档的信息 -->
+    <select id="selectDate" resultType="java.util.Map">
+        SELECT FROM_UNIXTIME(ms_article.create_date / 1000, "%Y") as year,
+               FROM_UNIXTIME(ms_article.create_date / 1000, "%m") AS month,
+               COUNT(*)                                           as count
+        FROM ms_article
+        GROUP BY year, month
+    </select>
+
+    <resultMap id="findPageMap" type="com.swz.blog.pojo.Article">
+        <id column="id" property="id"/>
+        <result column="author_id" property="authorId"/>
+        <result column="comment_counts" property="commentCounts"/>
+        <result column="create_date" property="createDate"/>
+        <result column="summary" property="summary"/>
+        <result column="title" property="title"/>
+        <result column="view_counts" property="viewCounts"/>
+        <result column="weight" property="weight"/>
+        <result column="body_id" property="bodyId"/>
+        <result column="category_id" property="categoryId"/>
+    </resultMap>
+
+    <select id="findPage" resultMap="findPageMap">
+        select * from ms_article
+        <where>
+            1=1
+            <if test="categoryId!=null">
+                and category_id=#{categoryId}
+            </if>
+            <if test="year!=null and year.length>0">
+                and FROM_UNIXTIME(ms_article.create_date / 1000, "%Y") =#{year}
+            </if>
+            <if test="month!=null and month.length>0">
+                and FROM_UNIXTIME(ms_article.create_date / 1000, "%m") =#{month}
+            </if>
+            <if test="tagId!=null">
+                and id in (select article_id from ms_article_tag where tag_id = #{tagId} )
+            </if>
+            <if test="sort=='asc'">
+                order by weight asc,id desc
+            </if>
+            <if test="sort=='desc'">
+                order by weight desc,id desc
+            </if>
+        </where>
+    </select>
+</mapper>
